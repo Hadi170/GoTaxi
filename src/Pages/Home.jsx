@@ -8,7 +8,6 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-yellow-400 text-black flex flex-col">
       {/* Top navigation */}
-      <Navbar />
 
 
     <div>
@@ -78,10 +77,6 @@ export default function HomePage() {
         </section>
       </main>
 
-      {/* Simple footer */}
-      <footer className="py-4 text-center text-sm border-t-2 border-black bg-black text-yellow-400">
-        © {new Date().getFullYear()} GoTaxi · All rights reserved
-      </footer>
     </div>
   );
 }
