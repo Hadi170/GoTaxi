@@ -1,11 +1,30 @@
 // src/Pages/Home.jsx
 import Navbar from "../Components/Navbar";
-
+import { useState } from 'react';
+import React from 'react'
+import Menu from '../Pages/Menu'
 export default function HomePage() {
+  const [isHidden, setIsHidden] = useState(false);
   return (
     <div className="min-h-screen bg-yellow-400 text-black flex flex-col">
       {/* Top navigation */}
       <Navbar />
+
+
+    <div>
+      <div>
+        <Navbar
+      onSideBarHide={() => {
+            setIsHidden(!isHidden);
+          }} 
+      />
+</div>
+    <div className={`col-span-1 ${isHidden ? "hidden" : "block"}`}>
+      <Menu/>
+
+</div>
+      
+    </div>
 
       {/* Hero section */}
       <main className="flex-1 flex flex-col items-center justify-center px-4">
