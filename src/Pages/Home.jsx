@@ -1,24 +1,12 @@
 // src/Pages/Home.jsx
-import Navbar from "../Components/Navbar";
-import { useState } from 'react';
 import React from 'react'
-import Menu from '../Pages/Menu'
-import Footer from '../Components/Footer';
+
 export default function HomePage() {
-  const [isHidden, setIsHidden] = useState(false);
   return (
     <div className="min-h-screen bg-yellow-400 text-black flex flex-col">
       <div>
-        <div>
-        <Navbar
-      onSideBarHide={() => {
-            setIsHidden(!isHidden);
-          }} 
-      />
-</div>
-    <div className={`col-span-1 ${isHidden ? "hidden" : "block"}`}>
-      <Menu/>
-</div>
+        
+    
 </div>
     <main className="flex-1 flex flex-col items-center justify-center px-4">
         <section className="max-w-4xl text-center space-y-6">
@@ -70,9 +58,7 @@ export default function HomePage() {
           </div>
         </section>
       </main>
-      <div>
-        <Footer/>
-      </div>
+     
 
     </div>
   );
