@@ -2,12 +2,13 @@ import { useState } from 'react';
 import React from 'react'
 import Navbar from '../Components/Navbar'
 import Menu from '../Pages/Menu'
+import Footer from '../Components/Footer';
 
 
 function Home() {
   const [isHidden, setIsHidden] = useState(false);
   return (
-    <div>
+    <div className="grid h-screen grid-rows-[auto_1fr_auto]">
       <div>
         <Navbar
       onSideBarHide={() => {
@@ -19,9 +20,11 @@ function Home() {
       <Menu/>
 
 </div>
-      
+      <div>
+        <Footer/>
+      </div>
     </div>
   )
 }
 
-export default Home
+export default Home;
