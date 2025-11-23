@@ -1,7 +1,7 @@
 # 🚕 GoTaxi – ReactJS Taxi Booking Web App
 
 GoTaxi is a modern, responsive taxi-booking web application built using **ReactJS** and **Tailwind CSS**.  
-This project was created as part of the Web Programming (WEB2) requirements.
+It lets users quickly book safe and affordable rides through a clean and intuitive interface, offers dynamic ride selection, real-time trip details, and a polished UI
 
 ---
 
@@ -51,8 +51,8 @@ This project was created as part of the Web Programming (WEB2) requirements.
 | **JavaScript (ES6+)** | Logic and interactivity |
 
 ---
-
 ## 📁 Project Structure
+```bash
 GoTaxi/
 ├── public/
 ├── src/
@@ -74,3 +74,35 @@ GoTaxi/
 ├── package.json
 ├── tailwind.config.js
 ├── README.md
+```
+
+
+## 🚀 Setup & Run Locally
+
+### 1️⃣ Prerequisites
+- **Node.js** (LTS version recommended)
+- **npm** (comes with Node)
+
+Check versions:
+```bash
+node -v
+npm -v
+```
+
+2️⃣ Clone the repository
+```bash
+git clone https://github.com/Hadi170/GoTaxi.git
+cd GoTaxi
+```
+
+3️⃣ Install dependencies
+```bash
+npm install
+```
+
+4️⃣ Start the development server
+```bash
+npm start
+```
+The app will be available at:
+http://localhost:3000
