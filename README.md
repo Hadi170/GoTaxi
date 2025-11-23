@@ -30,7 +30,7 @@ It lets users quickly book safe and affordable rides through a clean and intuiti
 ![image alt](https://github.com/Hadi170/GoTaxi/blob/b2e94fe656e01973e2f523c6183498f1612ca9c8/contact.png)
 
 - **Services** – List of available taxi services
-   ![image alt](https://github.com/Hadi170/GoTaxi/blob/7579a204f5074bf26e3518e51f9b1e4098e04091/services.png)
+   ![image alt](https://github.com/Hadi170/GoTaxi/blob/1552b9b6b019ae1d745e1523f8c51c818b5c6e3c/services.png)
   
 - **Offers** – Displays special offers (dynamic card generation)
   ![image alt](https://github.com/Hadi170/GoTaxi/blob/be1563cbb531ecf6be5a6f4a0bc579c9f52ea39a/offers.png)
