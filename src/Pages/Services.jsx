@@ -36,10 +36,10 @@ const Services = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 px-4 py-8 flex justify-center">
+    <div className="min-h-screen bg-yellow-400 px-4 py-8 flex justify-center">
       <div className="w-full max-w-3xl bg-black text-yellow-300 rounded-2xl shadow-xl p-6 sm:p-8">
         
-        {/* Page Header */}
+        
         <div className="mb-6 text-center">
           <h1 className="text-4xl font-extrabold text-yellow-400">Become A Driver</h1>
           <p className="text-gray-300 mt-2 text-sm">
@@ -47,7 +47,7 @@ const Services = () => {
           </p>
         </div>
 
-        {/* Sub Header */}
+        
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-yellow-400">
             Become a Driver
@@ -57,10 +57,10 @@ const Services = () => {
           </p>
         </div>
 
-        {/* FORM */}
+       
         <form onSubmit={handleSubmit} className="space-y-5">
           
-          {/* Name + Phone */}
+          
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold mb-1">Full Name *</label>
@@ -87,7 +87,7 @@ const Services = () => {
             </div>
           </div>
 
-          {/* Email + City */}
+          
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold mb-1">Email</label>
@@ -113,7 +113,7 @@ const Services = () => {
             </div>
           </div>
 
-          {/* Experience + Availability */}
+          
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold mb-1">Experience (years) *</label>
@@ -144,7 +144,7 @@ const Services = () => {
             </div>
           </div>
 
-          {/* Car section */}
+          
           <div className="grid sm:grid-cols-3 gap-4">
             <div className="sm:col-span-2">
               <label className="block text-xs font-semibold mb-1">Car Model *</label>
@@ -197,7 +197,7 @@ const Services = () => {
             </div>
           </div>
 
-          {/* Mood */}
+          
           <div>
             <label className="block text-xs font-semibold mb-1">Driving Style / Mood</label>
             <input
@@ -209,7 +209,7 @@ const Services = () => {
             />
           </div>
 
-          {/* Terms */}
+          
           <div className="flex items-start gap-2 text-xs text-gray-200">
             <input
               type="checkbox"
@@ -221,7 +221,7 @@ const Services = () => {
             <label>I agree that the information provided is accurate.</label>
           </div>
 
-          {/* Submit button */}
+          
           <button
             type="submit"
             className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-3 rounded-full transition"

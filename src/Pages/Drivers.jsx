@@ -129,8 +129,8 @@ const Drivers = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 px-4 py-8">
-      {/* Page header */}
+    <div className="min-h-screen bg-yellow-400 px-4 py-8">
+      
       <div className="max-w-6xl mx-auto mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900">
@@ -150,7 +150,7 @@ const Drivers = () => {
         </div>
       </div>
 
-      {/* Cards grid */}
+      
       <div className="max-w-6xl mx-auto grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
         {drivers.map((driver) => (
           <div
