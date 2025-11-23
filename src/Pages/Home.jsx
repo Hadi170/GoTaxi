@@ -16,12 +16,12 @@ export default function HomePage() {
 
           <p className="text-lg md:text-xl">
             Book safe and affordable rides in just a few clicks. 
-            Airport, city, or late-night trips – we’ve got you covered 24/7.
+            Airport, city, or late-night trips  we’ve got you covered 24/7.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-4">
             <a
-              href="/menu" // later you can change this to /book
+              href="/booking" // later you can change this to /book
               className="px-6 py-3 bg-black text-yellow-400 font-semibold rounded-md shadow hover:bg-yellow-300 hover:text-black border-2 border-black transition"
             >
               Book a ride

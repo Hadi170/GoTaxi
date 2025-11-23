@@ -14,9 +14,12 @@ function Navbar({onSideBarHide}) {
         } >
         <FaBars className='hover:text-yellow-400'/>
       </button>
-      <h1 className='text-2xl font-bold  text-yellow-400 flex items-center gap-1'>
-        GO<FaTaxi className='inline-block '/> Taxi
-      </h1>
+       <Link 
+          to="/" 
+          className='text-2xl font-bold text-yellow-400 flex items-center gap-1'
+        >
+          GO <FaTaxi className='inline-block' /> Taxi
+        </Link>
 </div>
       
       <div className='space-x-6 hidden md:flex' >

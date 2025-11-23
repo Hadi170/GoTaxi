@@ -24,7 +24,6 @@ function Contact() {
 
   return (
     <>
-    <Navbar />
     <div className="min-h-screen bg-yellow-400 flex items-center justify-center px-4">
       <div className="w-full max-w-xl bg-black text-yellow-300 rounded-2xl shadow-xl p-8 border-4 border-yellow-300">
         <h1 className="text-3xl font-extrabold mb-2 text-yellow-300">
