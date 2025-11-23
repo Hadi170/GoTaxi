@@ -41,6 +41,8 @@ It lets users quickly book safe and affordable rides through a clean and intuiti
   - Dynamic state update  
  ![image alt](https://github.com/Hadi170/GoTaxi/blob/7579a204f5074bf26e3518e51f9b1e4098e04091/booking.png)
 
+- **Drivers**  - List of Taxi Drivers with their own card
+![image alt](https://github.com/Hadi170/GoTaxi/blob/bf1dab5e620780fc5cdeea5eb7d635d8ddc2f6e9/drivers.png)
 
 ## 🛠️ Technologies Used
 
