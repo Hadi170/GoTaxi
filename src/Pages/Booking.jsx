@@ -52,10 +52,10 @@ return(
 <div className="border rounded-xl p-3 flex items-center gap-3 bg-white col-spaan-2">
 <FiUsers className="text-yellow-400 text-xl"/>
 <select className="bg-transparent outline-none w-full">
-<options>1 Passenger</options>
-<options>2 Passengers</options>
-<options>3 Passengers</options>
-<options>4 Passengers</options>
+<option>1 Passenger</option>
+<option>2 Passengers</option>
+<option>3 Passengers</option>
+<option>4 Passengers</option>
 </select>
 </div>
 </div>
