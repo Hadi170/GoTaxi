@@ -10,7 +10,8 @@ import { useState } from 'react';
 import Offers from "./Pages/Offers";
 import Drivers from "./Pages/Drivers";
 import Services from "./Pages/Services";
-
+import AdminLogin from "./Pages/AdminLogin";
+import AdminDashboard from "./Pages/AdminDashboard";
 export default function App() {
   const [isHidden, setIsHidden] = useState(false);
   return (
@@ -39,6 +40,8 @@ export default function App() {
             <Route path="/offers" element={<Offers />} />
             <Route path="/drivers" element={<Drivers />} />
             <Route path="/services" element={<Services />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<AdminDashboard />} />
           </Routes>
         </div>
       </div>
