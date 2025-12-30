@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 const Services = () => {
   const [form, setForm] = useState({
@@ -23,17 +24,49 @@ const Services = () => {
       [name]: type === "checkbox" ? checked : value,
     }));
   };
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  if (!form.agree) {
+    alert("You must agree to the terms before submitting.");
+    return;
+  }
 
-    if (!form.agree) {
-      alert("You must agree to the terms before applying.");
+  try {
+    const res = await fetch(`${API}/api/driver-applications`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data?.error || "Failed to submit application");
       return;
     }
 
-    alert("Thank you for applying! We will review your information soon.");
-  };
+    alert("Application submitted! Admin will review it soon.");
+
+    // optional reset
+    setForm({
+      fullName: "",
+      phone: "",
+      email: "",
+      city: "",
+      experienceYears: "",
+      carModel: "",
+      carColor: "",
+      carYear: "",
+      licenseNumber: "",
+      mood: "",
+      availability: "full-time",
+      agree: false,
+    });
+  } catch (err) {
+    alert("Network error: " + err.message);
+  }
+};
 
   return (
     <div className="min-h-screen bg-yellow-400 px-4 py-8 flex justify-center">

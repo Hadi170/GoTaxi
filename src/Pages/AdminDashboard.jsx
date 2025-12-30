@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 
 const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
-
 export default function AdminDashboard() {
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,9 +24,14 @@ export default function AdminDashboard() {
       }
 
       const data = await res.json();
+      if (!res.ok) {
+        setErr(data?.error || "Failed to load applications");
+        return;
+      }
+
       setApps(data);
     } catch (e) {
-      setErr(String(e));
+      setErr("Network error");
     } finally {
       setLoading(false);
     }
@@ -59,77 +63,95 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (loading) return <div style={{ padding: 20 }}>Loading...</div>;
+  const badge = (status) => {
+    const base = "px-2 py-1 rounded-full text-xs font-bold";
+    if (status === "approved") return `${base} bg-green-500/20 text-green-200 border border-green-500/40`;
+    if (status === "declined") return `${base} bg-red-500/20 text-red-200 border border-red-500/40`;
+    return `${base} bg-yellow-500/20 text-yellow-200 border border-yellow-500/40`;
+  };
 
   return (
-    <div style={{ padding: 20 }}>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <h2>Driver Applications</h2>
-        <button onClick={logout}>Logout</button>
-      </div>
-
-      {err && <p style={{ color: "red" }}>{err}</p>}
-
-      {apps.length === 0 ? (
-        <p>No applications yet.</p>
-      ) : (
-        <div style={{ display: "grid", gap: 12 }}>
-          {apps.map((a) => (
-            <div
-              key={a.id}
-              style={{
-                border: "1px solid #333",
-                borderRadius: 10,
-                padding: 12,
-              }}
-            >
-              <h3 style={{ margin: 0 }}>{a.full_name}</h3>
-
-              <p style={{ margin: "6px 0" }}>
-                {a.city} • {a.phone} • {a.email}
-              </p>
-
-              <p style={{ margin: "6px 0" }}>
-                {a.car_model} ({a.car_year}) • {a.car_color}
-              </p>
-
-              <p style={{ margin: "6px 0" }}>
-                Exp: {a.experience_years} years • {a.availability}
-              </p>
-
-              <p style={{ margin: "6px 0" }}>
-                License: {a.license_number}
-              </p>
-
-              <p style={{ margin: "6px 0" }}>
-                Style: {a.driving_style || "-"}
-              </p>
-
-              <p style={{ margin: "6px 0" }}>
-                Status: <b>{a.status}</b>
-              </p>
-
-              <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-                <button
-                  onClick={() => approve(a.id)}
-                  disabled={a.status !== "pending"}
-                >
-                  Approve
-                </button>
-                <button
-                  onClick={() => decline(a.id)}
-                  disabled={a.status !== "pending"}
-                >
-                  Decline
-                </button>
-              </div>
-            </div>
-          ))}
+    <div className="min-h-screen bg-yellow-400 px-4 py-8">
+      <div className="max-w-5xl mx-auto bg-black text-yellow-300 rounded-2xl shadow-xl p-6 sm:p-8 border border-yellow-500/30">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold text-yellow-400">Admin Dashboard</h1>
+            <p className="text-sm text-gray-300 mt-1">Driver applications review</p>
+          </div>
+          <button
+            onClick={logout}
+            className="bg-yellow-400 text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition"
+          >
+            Logout
+          </button>
         </div>
-      )}
+
+        {err && (
+          <div className="mt-4 bg-red-500/20 border border-red-500/40 text-red-200 rounded-lg px-3 py-2 text-sm">
+            {err}
+          </div>
+        )}
+
+        <div className="mt-6">
+          {loading ? (
+            <p className="text-gray-300">Loading...</p>
+          ) : apps.length === 0 ? (
+            <p className="text-gray-300">No applications yet.</p>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-4">
+              {apps.map((a) => (
+                <div
+                  key={a.id}
+                  className="bg-gray-950/60 rounded-2xl p-5 border border-yellow-500/20 shadow"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-xl font-bold text-yellow-300">{a.full_name}</h3>
+                      <p className="text-sm text-gray-300">{a.email}</p>
+                      <p className="text-sm text-gray-300">{a.phone}</p>
+                    </div>
+                    <span className={badge(a.status)}>{a.status}</span>
+                  </div>
+
+                  <div className="mt-4 text-sm text-gray-200 space-y-1">
+                    <p><span className="text-yellow-300/90 font-semibold">City:</span> {a.city}</p>
+                    <p><span className="text-yellow-300/90 font-semibold">Experience:</span> {a.experience_years} years</p>
+                    <p><span className="text-yellow-300/90 font-semibold">Availability:</span> {a.availability}</p>
+                    <p><span className="text-yellow-300/90 font-semibold">Car:</span> {a.car_model} ({a.car_year}) - {a.car_color}</p>
+                    <p><span className="text-yellow-300/90 font-semibold">License:</span> {a.license_number}</p>
+                    <p><span className="text-yellow-300/90 font-semibold">Style:</span> {a.driving_style || "-"}</p>
+                  </div>
+
+                  {a.status === "pending" && (
+                    <div className="mt-5 flex gap-2">
+                      <button
+                        onClick={() => approve(a.id)}
+                        className="flex-1 bg-green-500/20 text-green-200 border border-green-500/40 font-bold py-2 rounded-lg hover:bg-green-500/30 transition"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => decline(a.id)}
+                        className="flex-1 bg-red-500/20 text-red-200 border border-red-500/40 font-bold py-2 rounded-lg hover:bg-red-500/30 transition"
+                      >
+                        Decline
+                      </button>
+                    </div>
+                  )}
+
+                  {a.status !== "pending" && (
+                    <div className="mt-5 text-xs text-gray-400">
+                      Action completed
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

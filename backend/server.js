@@ -73,13 +73,7 @@ app.post("/api/admin/logout", (req, res) => {
   req.session.destroy(() => res.json({ ok: true }));
 });
 
-app.get("/api/admin/me", (req, res) => {
-  res.json({ isAdmin: !!req.session?.isAdmin });
-});
 
-app.get("/api/admin/ping", requireAdmin, (req, res) => {
-  res.json({ ok: true, message: "Admin access granted" });
-});
 
 // List driver applications (admin only)
 app.get("/api/driver-applications", requireAdmin, async (req, res) => {
@@ -92,6 +86,61 @@ app.get("/api/driver-applications", requireAdmin, async (req, res) => {
     res.status(500).json({ error: String(err) });
   }
 });
+
+
+
+// Submit driver application (PUBLIC)
+app.post("/api/driver-applications", async (req, res) => {
+  try {
+    const {
+      fullName,
+      phone,
+      email,
+      city,
+      experienceYears,
+      availability,
+      carModel,
+      carYear,
+      carColor,
+      licenseNumber,
+      mood,
+    } = req.body;
+
+    // prevent empty inserts
+    if (!fullName || !phone || !email || !city || !carModel || !carYear || !carColor || !licenseNumber) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const exp = Number(experienceYears || 0);
+
+    await pool.query(
+      `INSERT INTO driver_applications
+        (full_name, phone, email, city, experience_years, availability,
+         car_model, car_year, car_color, license_number, driving_style, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+      [
+        fullName,
+        phone,
+        email,
+        city,
+        exp,
+        availability || "full-time",
+        carModel,
+        carYear,
+        carColor,
+        licenseNumber,
+        mood || null,
+      ]
+    );
+
+    res.json({ ok: true, message: "Application submitted" });
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
+
+
+
 
 // Approve: copy to drivers + mark approved
 app.post(
