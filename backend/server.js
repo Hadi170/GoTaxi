@@ -8,10 +8,6 @@ dotenv.config();
 
 const app = express();
 
-/*
-  Behind Render (or any proxy), Express needs this for secure cookies + correct IP handling.
-  It doesn't affect local dev.
-*/
 app.set("trust proxy", 1);
 
 app.use(
@@ -21,11 +17,9 @@ app.use(
   })
 );
 
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(express.json({ limit: "15mb" }));
+app.use(express.urlencoded({ extended: true, limit: "15mb" }));
 
-
-// Session-based auth (admin)
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "dev_secret_change_later",
@@ -45,7 +39,6 @@ function requireAdmin(req, res, next) {
   return res.status(401).json({ error: "Not logged in" });
 }
 
-// MySQL connection pool
 const pool = mysql.createPool({
   host: process.env.DB_HOST || "localhost",
   user: process.env.DB_USER || "root",
@@ -56,14 +49,10 @@ const pool = mysql.createPool({
   connectionLimit: 10,
 });
 
-// Admin auth endpoints
 app.post("/api/admin/login", (req, res) => {
   const { username, password } = req.body;
 
-  if (
-    username === process.env.ADMIN_USER &&
-    password === process.env.ADMIN_PASS
-  ) {
+  if (username === process.env.ADMIN_USER && password === process.env.ADMIN_PASS) {
     req.session.isAdmin = true;
     return res.json({ ok: true });
   }
@@ -75,9 +64,6 @@ app.post("/api/admin/logout", (req, res) => {
   req.session.destroy(() => res.json({ ok: true }));
 });
 
-
-
-// List driver applications (admin only)
 app.get("/api/driver-applications", requireAdmin, async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -89,9 +75,6 @@ app.get("/api/driver-applications", requireAdmin, async (req, res) => {
   }
 });
 
-
-
-// Submit driver application (PUBLIC)
 app.post("/api/driver-applications", async (req, res) => {
   try {
     const {
@@ -106,37 +89,45 @@ app.post("/api/driver-applications", async (req, res) => {
       carColor,
       licenseNumber,
       mood,
-      photo
+      photo,
     } = req.body;
 
-    // prevent empty inserts
-    if (!fullName || !phone || !email || !city || !carModel || !carYear || !carColor || !licenseNumber) {
+    if (
+      !fullName ||
+      !phone ||
+      !email ||
+      !city ||
+      !carModel ||
+      !carYear ||
+      !carColor ||
+      !licenseNumber ||
+      !photo
+    ) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
     const exp = Number(experienceYears || 0);
 
- await pool.query(
-  `INSERT INTO driver_applications
-    (full_name, phone, email, city, experience_years, availability,
-     car_model, car_year, car_color, license_number, driving_style, photo, status)
-   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
-  [
-    fullName,
-    phone,
-    email,
-    city,
-    exp,
-    availability || "full-time",
-    carModel,
-    carYear,
-    carColor,
-    licenseNumber,
-    mood || null,
-    photo
-  ]
-);
-
+    await pool.query(
+      `INSERT INTO driver_applications
+        (full_name, phone, email, city, experience_years, availability,
+         car_model, car_year, car_color, license_number, driving_style, status, photo)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
+      [
+        fullName,
+        phone,
+        email,
+        city,
+        exp,
+        availability || "full-time",
+        carModel,
+        carYear,
+        carColor,
+        licenseNumber,
+        mood || null,
+        photo,
+      ]
+    );
 
     res.json({ ok: true, message: "Application submitted" });
   } catch (err) {
@@ -144,86 +135,81 @@ app.post("/api/driver-applications", async (req, res) => {
   }
 });
 
+app.post("/api/admin/applications/:id/approve", requireAdmin, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
 
+    const [rows] = await pool.query(
+      "SELECT * FROM driver_applications WHERE id = ?",
+      [id]
+    );
 
+    if (rows.length === 0) return res.status(404).json({ error: "Not found" });
 
-// Approve: copy to drivers + mark approved
-app.post(
-  "/api/admin/applications/:id/approve",
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const id = Number(req.params.id);
+    const a = rows[0];
 
-      const [rows] = await pool.query(
-        "SELECT * FROM driver_applications WHERE id = ?",
-        [id]
-      );
+    if (a.status !== "pending") {
+      return res.status(400).json({ error: "Application is not pending" });
+    }
 
-      if (rows.length === 0) return res.status(404).json({ error: "Not found" });
-
-      const a = rows[0];
-
-      if (a.status !== "pending") {
-        return res.status(400).json({ error: "Application is not pending" });
-      }
-
-      await pool.query(
-        `INSERT INTO drivers
+    await pool.query(
+      `INSERT INTO drivers
         (full_name, phone, email, city, experience_years, availability,
-         car_model, car_year, car_color, license_number, driving_style, image_filename)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          a.full_name,
-          a.phone,
-          a.email,
-          a.city,
-          a.experience_years,
-          a.availability,
-          a.car_model,
-          a.car_year,
-          a.car_color,
-          a.license_number,
-          a.driving_style,
-          a.image_filename,
-        ]
-      );
+         car_model, car_year, car_color, license_number, driving_style, photo)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        a.full_name,
+        a.phone,
+        a.email,
+        a.city,
+        a.experience_years,
+        a.availability,
+        a.car_model,
+        a.car_year,
+        a.car_color,
+        a.license_number,
+        a.driving_style,
+        a.photo,
+      ]
+    );
 
-      await pool.query(
-        "UPDATE driver_applications SET status='approved' WHERE id = ?",
-        [id]
-      );
+    await pool.query("UPDATE driver_applications SET status='approved' WHERE id = ?", [id]);
 
-      res.json({ ok: true });
-    } catch (err) {
-      res.status(500).json({ error: String(err) });
-    }
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
   }
-);
+});
 
-// Decline: delete application
-app.delete(
-  "/api/admin/applications/:id",
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const id = Number(req.params.id);
+app.delete("/api/admin/applications/:id", requireAdmin, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
 
-      const [result] = await pool.query(
-        "DELETE FROM driver_applications WHERE id = ?",
-        [id]
-      );
+    const [result] = await pool.query(
+      "DELETE FROM driver_applications WHERE id = ?",
+      [id]
+    );
 
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ error: "Not found" });
-      }
-
-      res.json({ ok: true });
-    } catch (err) {
-      res.status(500).json({ error: String(err) });
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Not found" });
     }
+
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
   }
-);
+});
+
+app.get("/api/drivers", async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT * FROM drivers ORDER BY created_at DESC"
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
 
 const PORT = Number(process.env.PORT || 5000);
 app.listen(PORT, () => {
