@@ -30,7 +30,7 @@ export default function AdminDashboard() {
       }
 
       setApps(data);
-    } catch (e) {
+    } catch {
       setErr("Network error");
     } finally {
       setLoading(false);
@@ -106,13 +106,27 @@ export default function AdminDashboard() {
                   key={a.id}
                   className="bg-gray-950/60 rounded-2xl p-5 border border-yellow-500/20 shadow"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="text-xl font-bold text-yellow-300">{a.full_name}</h3>
-                      <p className="text-sm text-gray-300">{a.email}</p>
-                      <p className="text-sm text-gray-300">{a.phone}</p>
+                  <div className="flex items-start gap-4">
+                    <img
+                      src={a.photo}
+                      alt="driver"
+                      className="w-16 h-16 rounded-full object-cover border-2 border-yellow-400"
+                    />
+
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h3 className="text-xl font-bold text-yellow-300">{a.full_name}</h3>
+                          <p className="text-sm text-gray-300">{a.email}</p>
+                          <p className="text-sm text-gray-300">{a.phone}</p>
+                        </div>
+                        <span className={badge(a.status)}>{a.status}</span>
+                      </div>
+
+                      <p className="text-xs text-gray-400 mt-1">
+                        Submitted: {new Date(a.created_at).toLocaleString()}
+                      </p>
                     </div>
-                    <span className={badge(a.status)}>{a.status}</span>
                   </div>
 
                   <div className="mt-4 text-sm text-gray-200 space-y-1">

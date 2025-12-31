@@ -21,7 +21,9 @@ app.use(
   })
 );
 
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
 
 // Session-based auth (admin)
 app.use(
@@ -104,6 +106,7 @@ app.post("/api/driver-applications", async (req, res) => {
       carColor,
       licenseNumber,
       mood,
+      photo
     } = req.body;
 
     // prevent empty inserts
@@ -113,25 +116,27 @@ app.post("/api/driver-applications", async (req, res) => {
 
     const exp = Number(experienceYears || 0);
 
-    await pool.query(
-      `INSERT INTO driver_applications
-        (full_name, phone, email, city, experience_years, availability,
-         car_model, car_year, car_color, license_number, driving_style, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
-      [
-        fullName,
-        phone,
-        email,
-        city,
-        exp,
-        availability || "full-time",
-        carModel,
-        carYear,
-        carColor,
-        licenseNumber,
-        mood || null,
-      ]
-    );
+ await pool.query(
+  `INSERT INTO driver_applications
+    (full_name, phone, email, city, experience_years, availability,
+     car_model, car_year, car_color, license_number, driving_style, photo, status)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+  [
+    fullName,
+    phone,
+    email,
+    city,
+    exp,
+    availability || "full-time",
+    carModel,
+    carYear,
+    carColor,
+    licenseNumber,
+    mood || null,
+    photo
+  ]
+);
+
 
     res.json({ ok: true, message: "Application submitted" });
   } catch (err) {
