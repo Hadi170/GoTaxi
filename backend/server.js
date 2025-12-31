@@ -4,6 +4,7 @@ import mysql from "mysql2/promise";
 import dotenv from "dotenv";
 import session from "express-session";
 import bcrypt from "bcrypt";
+import rateLimit from "express-rate-limit";
 
 dotenv.config();
 
@@ -50,8 +51,23 @@ const pool = mysql.createPool({
   connectionLimit: 10,
 });
 
+/* ===========================
+   RATE LIMITER (ADMIN LOGIN)
+   =========================== */
+const adminLoginLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 5,                  // 5 attempts
+  message: {
+    error: "Too many login attempts. Please try again later."
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
-app.post("/api/admin/login", async (req, res) => {
+/* ===========================
+   ADMIN AUTH
+   =========================== */
+app.post("/api/admin/login", adminLoginLimiter, async (req, res) => {
   try {
     const { username, password } = req.body;
 
@@ -59,13 +75,18 @@ app.post("/api/admin/login", async (req, res) => {
       return res.status(400).json({ ok: false, error: "Missing credentials" });
     }
 
-    const [rows] = await pool.query("SELECT * FROM admins WHERE username = ? LIMIT 1", [username]);
+    const [rows] = await pool.query(
+      "SELECT * FROM admins WHERE username = ? LIMIT 1",
+      [username]
+    );
+
     if (rows.length === 0) {
       return res.status(401).json({ ok: false, error: "Invalid credentials" });
     }
 
     const admin = rows[0];
     const ok = await bcrypt.compare(password, admin.password_hash);
+
     if (!ok) {
       return res.status(401).json({ ok: false, error: "Invalid credentials" });
     }
@@ -80,11 +101,13 @@ app.post("/api/admin/login", async (req, res) => {
   }
 });
 
-
 app.post("/api/admin/logout", (req, res) => {
   req.session.destroy(() => res.json({ ok: true }));
 });
 
+/* ===========================
+   DRIVER APPLICATIONS
+   =========================== */
 app.get("/api/driver-applications", requireAdmin, async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -131,9 +154,9 @@ app.post("/api/driver-applications", async (req, res) => {
 
     await pool.query(
       `INSERT INTO driver_applications
-        (full_name, phone, email, city, experience_years, availability,
-         car_model, car_year, car_color, license_number, driving_style, status, photo)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
+      (full_name, phone, email, city, experience_years, availability,
+       car_model, car_year, car_color, license_number, driving_style, status, photo)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
       [
         fullName,
         phone,
@@ -150,89 +173,15 @@ app.post("/api/driver-applications", async (req, res) => {
       ]
     );
 
-    res.json({ ok: true, message: "Application submitted" });
-  } catch (err) {
-    res.status(500).json({ error: String(err) });
-  }
-});
-
-app.post("/api/admin/applications/:id/approve", requireAdmin, async (req, res) => {
-  try {
-    const id = Number(req.params.id);
-
-    const [rows] = await pool.query(
-      "SELECT * FROM driver_applications WHERE id = ?",
-      [id]
-    );
-
-    if (rows.length === 0) return res.status(404).json({ error: "Not found" });
-
-    const a = rows[0];
-
-    if (a.status !== "pending") {
-      return res.status(400).json({ error: "Application is not pending" });
-    }
-
-    await pool.query(
-      `INSERT INTO drivers
-        (full_name, phone, email, city, experience_years, availability,
-         car_model, car_year, car_color, license_number, driving_style, photo)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        a.full_name,
-        a.phone,
-        a.email,
-        a.city,
-        a.experience_years,
-        a.availability,
-        a.car_model,
-        a.car_year,
-        a.car_color,
-        a.license_number,
-        a.driving_style,
-        a.photo,
-      ]
-    );
-
-    await pool.query("UPDATE driver_applications SET status='approved' WHERE id = ?", [id]);
-
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: String(err) });
   }
 });
 
-app.delete("/api/admin/applications/:id", requireAdmin, async (req, res) => {
-  try {
-    const id = Number(req.params.id);
-
-    const [result] = await pool.query(
-      "DELETE FROM driver_applications WHERE id = ?",
-      [id]
-    );
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "Not found" });
-    }
-
-    res.json({ ok: true });
-  } catch (err) {
-    res.status(500).json({ error: String(err) });
-  }
-});
-
-app.get("/api/drivers", async (req, res) => {
-  try {
-    const [rows] = await pool.query(
-      "SELECT * FROM drivers ORDER BY created_at DESC"
-    );
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: String(err) });
-  }
-});
-
-// CONTACT: submit (PUBLIC)
+/* ===========================
+   CONTACT
+   =========================== */
 app.post("/api/contact", async (req, res) => {
   try {
     const { name, email, message } = req.body;
@@ -246,13 +195,12 @@ app.post("/api/contact", async (req, res) => {
       [name.trim(), email.trim(), message.trim()]
     );
 
-    res.json({ ok: true, message: "Message sent" });
+    res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: String(err) });
   }
 });
 
-// CONTACT: list (ADMIN)
 app.get("/api/admin/contact", requireAdmin, async (req, res) => {
   try {
     const [rows] = await pool.query(
