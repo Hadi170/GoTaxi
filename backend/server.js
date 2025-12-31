@@ -3,6 +3,7 @@ import cors from "cors";
 import mysql from "mysql2/promise";
 import dotenv from "dotenv";
 import session from "express-session";
+import bcrypt from "bcrypt";
 
 dotenv.config();
 
@@ -49,16 +50,36 @@ const pool = mysql.createPool({
   connectionLimit: 10,
 });
 
-app.post("/api/admin/login", (req, res) => {
-  const { username, password } = req.body;
 
-  if (username === process.env.ADMIN_USER && password === process.env.ADMIN_PASS) {
+app.post("/api/admin/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ ok: false, error: "Missing credentials" });
+    }
+
+    const [rows] = await pool.query("SELECT * FROM admins WHERE username = ? LIMIT 1", [username]);
+    if (rows.length === 0) {
+      return res.status(401).json({ ok: false, error: "Invalid credentials" });
+    }
+
+    const admin = rows[0];
+    const ok = await bcrypt.compare(password, admin.password_hash);
+    if (!ok) {
+      return res.status(401).json({ ok: false, error: "Invalid credentials" });
+    }
+
     req.session.isAdmin = true;
-    return res.json({ ok: true });
-  }
+    req.session.adminId = admin.id;
+    req.session.adminUser = admin.username;
 
-  return res.status(401).json({ ok: false, error: "Invalid credentials" });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
 });
+
 
 app.post("/api/admin/logout", (req, res) => {
   req.session.destroy(() => res.json({ ok: true }));
@@ -204,6 +225,38 @@ app.get("/api/drivers", async (req, res) => {
   try {
     const [rows] = await pool.query(
       "SELECT * FROM drivers ORDER BY created_at DESC"
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
+
+// CONTACT: submit (PUBLIC)
+app.post("/api/contact", async (req, res) => {
+  try {
+    const { name, email, message } = req.body;
+
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    await pool.query(
+      "INSERT INTO contact_messages (name, email, message) VALUES (?, ?, ?)",
+      [name.trim(), email.trim(), message.trim()]
+    );
+
+    res.json({ ok: true, message: "Message sent" });
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
+
+// CONTACT: list (ADMIN)
+app.get("/api/admin/contact", requireAdmin, async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT * FROM contact_messages ORDER BY created_at DESC"
     );
     res.json(rows);
   } catch (err) {

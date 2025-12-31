@@ -1,29 +1,45 @@
 import React, { useState } from "react";
-import Navbar from '../Components/Navbar'
+
+const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 function Contact() {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
 
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+    setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Contact form:", form);
-    alert("Thank you for contacting GoTaxi. We will reply soon.");
-    setForm({ name: "", email: "", message: "" });
+    setErr("");
+    setLoading(true);
+
+    try {
+      const res = await fetch(`${API}/api/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErr(data?.error || "Failed to send message");
+        return;
+      }
+
+      alert("Thank you for contacting GoTaxi. We will reply soon.");
+      setForm({ name: "", email: "", message: "" });
+    } catch {
+      setErr("Network error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <>
     <div className="min-h-screen bg-yellow-400 flex items-center justify-center px-4">
       <div className="w-full max-w-xl bg-black text-yellow-300 rounded-2xl shadow-xl p-8 border-4 border-yellow-300">
         <h1 className="text-3xl font-extrabold mb-2 text-yellow-300">
@@ -33,6 +49,12 @@ function Contact() {
           Got a question about a ride, suggestion for the app, or want to report
           an issue? Send us a message and we’ll get back to you.
         </p>
+
+        {err && (
+          <div className="mb-4 bg-red-500/20 border border-red-500/40 text-red-200 rounded-lg px-3 py-2 text-sm">
+            {err}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -79,9 +101,10 @@ function Contact() {
 
           <button
             type="submit"
-            className="w-full mt-2 px-4 py-2 rounded-lg font-bold bg-yellow-400 text-black border-2 border-yellow-300 hover:bg-yellow-300 active:scale-[0.98] transition"
+            disabled={loading}
+            className="w-full mt-2 px-4 py-2 rounded-lg font-bold bg-yellow-400 text-black border-2 border-yellow-300 hover:bg-yellow-300 active:scale-[0.98] transition disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Send Message
+            {loading ? "Sending..." : "Send Message"}
           </button>
         </form>
 
@@ -91,7 +114,6 @@ function Contact() {
         </div>
       </div>
     </div>
-    </>
   );
 }
 
